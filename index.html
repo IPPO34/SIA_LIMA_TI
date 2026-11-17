@@ -649,13 +649,32 @@ ${reg.secreto}</div><button class="secondary-btn" id="copy-code" style="width:10
 }
 
 function formEditDevice(d) {
-  showModal(`<h2>Editar dispositivo</h2><p>Actualiza su nombre, distrito y dirección.</p><label>Nombre</label><input id="edit-name" value="${d.nombre}"><label>Distrito</label><select id="edit-district">${[...new Set([...DISTRITOS,d.distrito])].map(x=>`<option ${d.distrito===x?"selected":""}>${x}</option>`).join("")}</select><label>Dirección</label><input id="edit-address" value="${d.direccion}"><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancelar</button><button class="primary-btn" id="save-device">Guardar</button></div>`);
+  let lat = d.lat != null ? d.lat : -12.056, lng = d.lng != null ? d.lng : -77.03;
+  showModal(`<h2>Editar dispositivo</h2><p>Actualiza sus datos y arrastra el punto del mapa para fijar su ubicación exacta.</p><label>Nombre</label><input id="edit-name" value="${d.nombre}"><label>Distrito</label><select id="edit-district">${[...new Set([...DISTRITOS,d.distrito])].map(x=>`<option ${d.distrito===x?"selected":""}>${x}</option>`).join("")}</select><label>Dirección</label><input id="edit-address" value="${d.direccion}"><label>Ubicación exacta</label><div id="edit-map" style="height:230px;background:var(--bg)"></div><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><small id="edit-coords"></small><button type="button" class="secondary-btn" id="use-gps" style="padding:6px 9px">Usar mi ubicación</button></div><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancelar</button><button class="primary-btn" id="save-device">Guardar</button></div>`);
+
+  const m = L.map("edit-map").setView([lat, lng], d.lat != null ? 17 : 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(m);
+  const marker = L.marker([lat, lng], { draggable: true }).addTo(m);
+  const poner = p => { lat = p.lat; lng = p.lng; $("#edit-coords").textContent = `Coordenadas: ${lat.toFixed(5)}, ${lng.toFixed(5)}`; };
+  poner({ lat, lng });
+  marker.on("dragend", () => poner(marker.getLatLng()));
+  m.on("click", e => { marker.setLatLng(e.latlng); poner(e.latlng); });
+  setTimeout(() => m.invalidateSize(), 150);
+
+  $("#use-gps").onclick = () => {
+    if (!navigator.geolocation) { toast("Este navegador no permite obtener la ubicación."); return; }
+    navigator.geolocation.getCurrentPosition(
+      p => { const q = { lat: p.coords.latitude, lng: p.coords.longitude }; marker.setLatLng(q); m.setView(q, 17); poner(q); },
+      () => toast("No se pudo obtener tu ubicación.")
+    );
+  };
 
   $("#save-device").onclick = () => {
     actualizarDispositivo(d.id, {
       nombre: $("#edit-name").value,
       distrito: $("#edit-district").value,
-      direccion: $("#edit-address").value
+      direccion: $("#edit-address").value,
+      lat, lng
     });
     closeModal();
     $("#detail-drawer").classList.remove("open");
