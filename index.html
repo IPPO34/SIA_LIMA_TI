@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eef2f6">
+  <title>SIA-LIMA · Centro de monitoreo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{--bg:#101820;--side:#0c131a;--panel:#151f28;--panel2:#1a2631;--line:#2a3945;--text:#e7edf1;--muted:#8d9ba6;--soft:#b7c2ca;--accent:#6ba9c5;--red:#e35c5c;--amber:#e6aa43;--blue:#58a6d5;--gray:#87939d;--green:#55b58a;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--btn:#24536a;--btn-line:#477f98;--btn-text:#eff8fb;--ok-bg:#234b3e;--ok-line:#39755e;--chip:#344754;--chip-text:#dbe8ee;--toast-bg:#263c49;--toast-line:#476579;--toast-text:#edf7fa;--mapbg:#17242c;--brand-bg:#21485a;--brand-line:#47758a;--brand-text:#c9e7f2;--avatar-bg:#344c5b;--avatar-text:#d9e8ef;--notice-line:#66532f}
+[data-theme=light]{--bg:#eef2f6;--side:#fff;--panel:#fff;--panel2:#f5f7fa;--line:#d9e0e7;--text:#17212b;--muted:#5d6b78;--soft:#3c4a57;--accent:#1f6f94;--red:#c9362f;--amber:#c27a0e;--blue:#2a74b8;--gray:#6f7c88;--green:#2c8a62;--btn:#1f6f94;--btn-line:#1f6f94;--btn-text:#fff;--ok-bg:#e3f3ec;--ok-line:#8cc9ae;--chip:#e8edf2;--chip-text:#3c4a57;--toast-bg:#17212b;--toast-line:#17212b;--toast-text:#fff;--mapbg:#e6ebf0;--brand-bg:#1f6f94;--brand-line:#1f6f94;--brand-text:#fff;--avatar-bg:#dfe7ee;--avatar-text:#3c4a57;--notice-line:#e3c88f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px var(--sans)}button,input,select,textarea{font:inherit}button{cursor:pointer;color:inherit}.sidebar{position:fixed;inset:0 auto 0 0;width:236px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 14px;z-index:10}.brand{display:flex;align-items:center;gap:11px;padding:2px 8px 30px}.brand-mark{width:34px;height:34px;display:grid;place-items:center;background:var(--brand-bg);color:var(--brand-text);font-weight:700;font-size:19px;border:1px solid var(--brand-line)}.brand strong{display:block;letter-spacing:.07em;font-size:14px}.brand small,.user-mini small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.side-section{font-size:10px;color:var(--muted);letter-spacing:.12em;padding:0 10px 9px}.nav-item{border:0;background:transparent;width:100%;text-align:left;padding:11px 12px;border-radius:3px;color:var(--soft);display:flex;align-items:center;gap:12px;margin:2px 0}.nav-item span{width:17px;text-align:center;font-size:17px;color:var(--muted)}.nav-item.active,.nav-item:hover{background:var(--panel2);color:var(--text)}.nav-item.active{box-shadow:inset 2px 0 var(--accent)}.nav-count{margin-left:auto;background:var(--chip);color:var(--chip-text);border-radius:2px;padding:2px 6px;font:11px var(--mono)}.side-bottom{margin-top:auto}.connection{display:flex;align-items:center;gap:9px;padding:12px 10px;color:var(--muted);font-size:12px}.connection i,.live-pill i,.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}.theme-toggle{border:1px solid var(--line);background:transparent;padding:9px 10px;width:100%;text-align:left;color:var(--soft);font-size:12px}.user-mini{border-top:1px solid var(--line);margin-top:16px;padding:16px 4px 0;display:flex;align-items:center;gap:9px}.avatar{width:30px;height:30px;display:grid;place-items:center;background:var(--avatar-bg);color:var(--avatar-text);font-size:10px}.user-mini b{font-size:11px}.user-mini button{margin-left:auto;border:0;background:none;color:var(--muted)}.main{margin-left:236px;min-height:100vh}.topbar{height:57px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 25px;background:var(--bg)}.crumb{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:12px}.crumb b{color:var(--line)}.crumb strong{color:var(--text);font-weight:600}.top-actions{display:flex;align-items:center;gap:17px;font:12px var(--mono);color:var(--soft)}.live-pill{display:flex;align-items:center;gap:7px;color:var(--green);font:10px var(--sans);letter-spacing:.08em}.icon-btn{border:1px solid var(--line);background:var(--panel);width:30px;height:30px;display:grid;place-items:center;color:var(--soft);font-size:16px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}.metric{padding:15px 24px;border-right:1px solid var(--line)}.metric:last-child{border:0}.metric small,.metric-foot{display:block;color:var(--muted);font-size:11px}.metric strong{display:block;font:24px var(--mono);margin:5px 0 3px;font-weight:500}.metric .last-metric{font-size:19px}.metric-foot{font-size:10px}.view{display:none}.view.active{display:block}.map-layout{height:calc(100vh - 161px);min-height:560px;display:grid;grid-template-columns:minmax(0,1fr) 355px}.map-wrap{position:relative;min-width:0;border-right:1px solid var(--line)}#map{height:100%;background:var(--mapbg)}.map-tools{position:absolute;z-index:500;top:15px;left:15px;right:15px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}.map-tools>div{pointer-events:auto;background:var(--panel);border:1px solid var(--line);padding:9px 12px}.map-tools strong{display:block;font-size:12px}.map-tools small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.map-controls{display:flex;gap:5px}.map-controls button{background:var(--panel);border:1px solid var(--line);padding:8px 10px;font-size:11px}.map-controls button.selected{border-color:var(--accent);color:var(--accent)}.map-legend{position:absolute;z-index:500;bottom:14px;left:14px;display:flex;flex-wrap:wrap;gap:12px;background:var(--panel);border:1px solid var(--line);padding:9px 11px;font-size:10px;color:var(--soft)}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.red{background:var(--red)}.amber{background:var(--amber)}.blue{background:var(--blue)}.gray{background:var(--gray)}.device-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:5px}.device-dot.offline{background:#59646c}.alerts-panel{background:var(--panel);display:flex;flex-direction:column;min-height:0}.panel-head{padding:16px 16px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.panel-head h2,.chart-title h2{font-size:14px;margin:0;font-weight:600}.panel-head small,.chart-title small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.alert-filters{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}select,input,textarea{background:var(--bg);color:var(--text);border:1px solid var(--line);padding:8px 9px;outline:none;min-width:0}select:focus,input:focus,textarea:focus{border-color:var(--accent)}.alert-filters select{width:50%;font-size:10px;padding:7px}.alert-list{overflow:auto;flex:1}.alert-item{padding:12px 14px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:4px 1fr auto;gap:10px;cursor:pointer;transition:background .15s}.alert-item:hover{background:var(--panel2)}.alert-item.new{background:color-mix(in srgb,var(--accent) 9%,var(--panel))}.sev{width:3px;align-self:stretch;background:var(--gray)}.sev.DISPARO,.sev.EXPLOSION{background:var(--red)}.sev.GRITO{background:var(--amber)}.sev.VIDRIO{background:var(--blue)}.alert-main b{font-size:12px}.alert-main p{margin:4px 0;color:var(--soft);font-size:11px}.alert-main small{color:var(--muted);font-size:10px}.alert-time{font:10px var(--mono);color:var(--muted);white-space:nowrap}.panel-foot{padding:9px 14px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);display:flex;justify-content:space-between}.section-heading{display:flex;align-items:center;justify-content:space-between;padding:25px 28px 17px}.section-heading h1{font-size:21px;margin:0;font-weight:600}.section-heading p{margin:5px 0 0;color:var(--muted);font-size:12px}.primary-btn,.secondary-btn{border:1px solid var(--btn-line);background:var(--btn);color:var(--btn-text);padding:10px 14px;font-size:12px}.secondary-btn{background:var(--panel);color:var(--soft);border-color:var(--line)}.toolbar{display:flex;gap:8px;padding:0 28px 16px}.toolbar>input{width:280px}.toolbar select{min-width:150px}.table-shell{margin:0 28px;border:1px solid var(--line);background:var(--panel);overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th{text-align:left;color:var(--muted);font-size:10px;font-weight:500;padding:12px 13px;background:var(--panel2);border-bottom:1px solid var(--line)}td{padding:12px 13px;border-bottom:1px solid var(--line);font-size:11px;color:var(--soft)}tbody tr:hover{background:var(--panel2)}td b{color:var(--text);font-weight:600}.mono{font-family:var(--mono);font-size:10px}.state{display:inline-flex;align-items:center;gap:6px;font-size:10px}.state:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green)}.state.offline:before,.state.bloqueado:before{background:var(--red)}.state.pendiente:before{background:var(--amber)}.row-action{border:1px solid var(--line);background:transparent;padding:5px 8px;font-size:10px}.hidden{display:none!important}.empty-state{padding:35px;text-align:center;color:var(--muted)}.notice{margin:0 28px 15px;padding:12px;border:1px solid var(--notice-line);background:color-mix(in srgb,var(--amber) 8%,var(--panel));color:var(--soft);font-size:12px}.unknown-list{margin:0 28px;display:grid;gap:8px}.unknown-card{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);background:var(--panel);padding:16px}.unknown-card b{font:12px var(--mono)}.unknown-card small{display:block;color:var(--muted);margin-top:5px}.actions{display:flex;gap:7px}.approve{background:var(--ok-bg);border:1px solid var(--ok-line);padding:7px 11px;font-size:11px}.ignore{background:transparent;border:1px solid var(--line);padding:7px 11px;font-size:11px}.analysis-filters{align-items:end}.analysis-filters label{display:grid;gap:5px;font-size:10px;color:var(--muted)}.analysis-filters input{min-width:140px}.analysis-grid{padding:0 28px 28px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.chart-panel{background:var(--panel);border:1px solid var(--line);padding:16px;min-height:245px}.chart-panel.wide{grid-column:span 1}.chart-area{height:175px;margin-top:12px;overflow:hidden}.chart-area svg{width:100%;height:100%;overflow:visible}.drawer{position:fixed;z-index:1100;right:0;top:0;bottom:0;width:430px;max-width:100%;background:var(--panel);border-left:1px solid var(--line);transform:translateX(102%);transition:transform .22s;overflow:auto}.drawer.open{transform:translateX(0)}.drawer-head{padding:20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.drawer-head small{font-size:9px;letter-spacing:.1em;color:var(--muted)}.drawer-head h2{margin:5px 0 0;font-size:19px}.detail-block{padding:17px 20px;border-bottom:1px solid var(--line)}.detail-block h3{font-size:11px;margin:0 0 13px}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.detail-grid small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.detail-grid b{font-size:12px}.detail-map{height:160px;background:var(--panel2)}.detail-actions{display:flex;gap:6px;flex-wrap:wrap}.detail-actions button{padding:8px 10px;border:1px solid var(--line);background:var(--panel2);font-size:10px}.detail-actions button.active{border-color:var(--accent);color:var(--accent)}textarea{width:100%;min-height:65px;resize:vertical;margin-top:10px}.modal-backdrop{display:none;position:fixed;inset:0;background:#0009;z-index:1200;align-items:center;justify-content:center;padding:18px}.modal-backdrop.open{display:flex}.modal{width:520px;max-width:100%;background:var(--panel);border:1px solid var(--line);padding:22px}.modal h2{margin:0 0 5px;font-size:18px}.modal p{color:var(--muted);font-size:11px;margin:0 0 18px}.modal label{display:block;color:var(--muted);font-size:11px;margin:13px 0 5px}.modal input,.modal select{width:100%}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.stepper{display:flex;gap:5px;margin:18px 0}.step{height:3px;flex:1;background:var(--line)}.step.done{background:var(--accent)}.secret{font:20px var(--mono);padding:15px;background:var(--bg);border:1px dashed var(--accent);letter-spacing:.1em;text-align:center;margin:14px 0}.toast{position:fixed;z-index:1300;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;background:var(--toast-bg);border:1px solid var(--toast-line);color:var(--toast-text);padding:10px 15px;font-size:12px;transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}.leaflet-container{font-family:var(--sans)}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:2px}.leaflet-popup-content{font-size:11px}.marker-alert{width:13px;height:13px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 3px #0003}.marker-device{width:9px;height:9px;border:2px solid var(--panel);border-radius:50%;background:var(--green);box-shadow:0 0 0 1px var(--green)}.marker-device.offline{background:#68737b;box-shadow:0 0 0 1px #68737b}
+@media(max-width:1100px){.sidebar{width:190px}.main{margin-left:190px}.map-layout{grid-template-columns:minmax(0,1fr) 315px}.metric{padding:13px 15px}.analysis-grid{padding-left:18px;padding-right:18px}}
+@media(max-width:760px){.sidebar{width:100%;height:56px;inset:0 0 auto;flex-direction:row;padding:8px 12px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:0}.brand-mark{width:31px;height:31px}.brand small,.side-section,.sidebar nav,.side-bottom{display:none}.main{margin:56px 0 0}.topbar{height:48px;padding:0 12px}.top-actions{gap:9px}.metrics{grid-template-columns:1fr 1fr}.metric{padding:10px 13px;border-bottom:1px solid var(--line)}.metric strong{font-size:20px}.map-layout{height:calc(100dvh - 205px);min-height:460px;display:block;position:relative}.map-wrap{height:100%;border:0}#map{height:100%}.alerts-panel{position:absolute;z-index:600;left:0;right:0;bottom:0;height:43%;border-top:1px solid var(--line);transition:height .2s}.alerts-panel.collapsed{height:45px}.alerts-panel.collapsed .alert-filters,.alerts-panel.collapsed .alert-list,.alerts-panel.collapsed .panel-foot{display:none}.panel-head{padding:10px 14px}.alert-filters{padding:7px}.map-tools{top:8px;left:8px;right:8px}.map-tools>div{padding:7px}.map-tools small{display:none}.map-controls button{padding:7px;font-size:10px}.map-legend{display:none}.section-heading{padding:19px 14px 13px}.toolbar{padding:0 14px 12px;flex-wrap:wrap}.toolbar>input{width:100%}.table-shell{margin:0 14px}.analysis-grid{padding:0 14px 20px;grid-template-columns:1fr}.chart-panel.wide{grid-column:auto}.analysis-filters label{flex:1}.analysis-filters input{min-width:0;width:100%}.notice,.unknown-list{margin-left:14px;margin-right:14px}.drawer{top:auto;height:85dvh;width:100%;border-left:0;border-top:1px solid var(--line);transform:translateY(102%)}.drawer.open{transform:translateY(0)}.modal{padding:17px}.map-layout:after{content:"";position:absolute;top:0;left:0;right:0;height:1px;pointer-events:none}}
+
+.login{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:var(--bg)}.login-box{width:360px;max-width:92vw;background:var(--panel);border:1px solid var(--line);padding:26px;display:grid;gap:8px}.login-box h1{margin:0;font-size:20px;letter-spacing:.07em}.login-box p{margin:0 0 8px;color:var(--muted);font-size:12px}.login-box label{font-size:11px;color:var(--muted)}.login-box input{width:100%}.login-error{color:var(--red);font-size:12px;min-height:16px}
+</style>
+</head>
+<body data-theme="light">
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">S</div><div><strong>SIA-LIMA</strong><small>Monitoreo de alertas sonoras</small></div></div>
+    <div class="side-section">OPERACIÓN</div>
+    <nav id="main-nav">
+      <button class="nav-item active" data-view="mando"><span>⌖</span> Centro de mando</button>
+      <button class="nav-item" data-view="dispositivos"><span>▦</span> Dispositivos</button>
+      <button class="nav-item" data-view="sinregistro"><span>⊕</span> Sin registrar <b id="unknown-count" class="nav-count">2</b></button>
+      <button class="nav-item" data-view="analisis"><span>▥</span> Análisis</button>
+    </nav>
+    <div class="side-bottom"><div class="connection"><i></i><span>Servicio operativo</span></div><button id="theme-toggle" class="theme-toggle">☾ <span>Usar tema oscuro</span></button><div class="user-mini"><div class="avatar">OP</div><div><b>Operador de turno</b><small>Centro de monitoreo</small></div><button title="Cerrar sesión" id="logout">↗</button></div></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div class="crumb"><span>Operaciones</span><b>/</b><strong id="page-title">Centro de mando</strong></div><div class="top-actions"><span class="live-pill"><i></i> EN VIVO</span><span id="clock">--:--:--</span><button class="icon-btn" id="sound-toggle" title="Activar o silenciar sonido">♫</button><button class="icon-btn" id="help-btn" title="Ayuda">?</button></div></header>
+    <section class="metrics">
+      <div class="metric"><small>Alertas de hoy</small><strong id="metric-alerts">—</strong><span class="metric-foot">Desde las 00:00</span></div>
+      <div class="metric"><small>Dispositivos activos</small><strong id="metric-devices">—</strong><span class="metric-foot" id="metric-device-foot">Con señal reciente</span></div>
+      <div class="metric"><small>Última alerta</small><strong id="metric-last" class="last-metric">—</strong><span class="metric-foot" id="metric-last-foot">Sin alertas recientes</span></div>
+      <div class="metric"><small>Alertas por revisar</small><strong id="metric-pending">—</strong><span class="metric-foot">Requieren atención</span></div>
+    </section>
+    <section id="view-mando" class="view active">
+      <div class="map-layout">
+        <div class="map-wrap"><div class="map-tools"><div><strong>Mapa de alertas</strong><small>Lima Metropolitana y Callao</small></div><div class="map-controls"><button id="show-alerts" class="small-btn selected">Alertas</button><button id="show-devices" class="small-btn selected">Dispositivos</button><button id="heat-toggle" class="small-btn">Calor</button></div></div><div id="map"></div><div class="map-legend"><span><i class="dot red"></i> Disparo / Explosión</span><span><i class="dot amber"></i> Grito</span><span><i class="dot blue"></i> Vidrio</span><span><i class="dot gray"></i> Portazo / Desconocido</span><span><i class="device-dot"></i> Dispositivo activo</span><span><i class="device-dot offline"></i> Sin señal</span></div></div>
+        <aside class="alerts-panel"><div class="panel-head"><div><h2>Alertas en vivo</h2><small id="alert-total">— eventos</small></div><button id="filter-alerts" class="icon-btn" title="Filtrar alertas">☷</button></div><div class="alert-filters"><select id="alert-type-filter"><option value="">Todos los tipos</option><option>GRITO</option><option>DISPARO</option><option>VIDRIO</option><option>EXPLOSION</option><option>PORTAZO</option><option>DESCONOCIDO</option></select><select id="alert-district-filter"><option value="">Todos los distritos</option></select></div><div id="alert-list" class="alert-list"></div><div class="panel-foot"><span>Actualización automática</span><span class="pulse"></span></div></aside>
+      </div>
+    </section>
+    <section id="view-dispositivos" class="view">
+      <div class="section-heading"><div><h1>Dispositivos</h1><p>Estado y actividad de los equipos instalados.</p></div><button class="primary-btn" id="new-device">＋ Registrar dispositivo</button></div>
+      <div class="toolbar"><input id="device-search" placeholder="Buscar por nombre o ID…"><select id="device-district"><option value="">Todos los distritos</option></select><select id="device-state"><option value="">Todos los estados</option><option value="activo">Activo</option><option value="pendiente">Pendiente</option><option value="bloqueado">Bloqueado</option><option value="sin señal">Sin señal</option></select></div>
+      <div class="table-shell"><table><thead><tr><th>Dispositivo</th><th>ID</th><th>Distrito</th><th>Estado</th><th>Última señal</th><th>Alertas · 24 h</th><th>Alertas · 7 días</th><th></th></tr></thead><tbody id="device-table"></tbody></table><div id="device-empty" class="empty-state hidden">No hay dispositivos que coincidan con la búsqueda.</div></div>
+    </section>
+    <section id="view-sinregistro" class="view">
+      <div class="section-heading"><div><h1>Dispositivos sin registrar</h1><p>Equipos que intentaron enviar datos y aún no están autorizados.</p></div></div>
+      <div class="notice">Verifica físicamente el equipo y su ubicación antes de aprobarlo.</div><div id="unknown-list" class="unknown-list"></div>
+    </section>
+    <section id="view-analisis" class="view">
+      <div class="section-heading"><div><h1>Análisis de alertas</h1><p>Identifica patrones por zona, horario y tipo de evento.</p></div><button id="export-csv" class="secondary-btn">↓ Exportar CSV</button></div>
+      <div class="toolbar analysis-filters"><label>Desde <input type="date" id="date-from"></label><label>Hasta <input type="date" id="date-to"></label><select id="analysis-district"><option value="">Todos los distritos</option></select><select id="analysis-type"><option value="">Todos los tipos</option><option>GRITO</option><option>DISPARO</option><option>VIDRIO</option><option>EXPLOSION</option><option>PORTAZO</option><option>DESCONOCIDO</option></select><button id="apply-analysis" class="primary-btn">Aplicar filtros</button></div>
+      <div class="analysis-grid"><div class="chart-panel wide"><div class="chart-title"><h2>Alertas por distrito</h2><small>Comparación de volumen y alertas por dispositivo</small></div><div id="district-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Alertas por tipo</h2><small>Distribución de eventos</small></div><div id="type-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Evolución en el tiempo</h2><small>Alertas registradas por día</small></div><div id="trend-chart" class="chart-area"></div></div><div class="chart-panel wide"><div class="chart-title"><h2>Actividad por hora y día</h2><small>Mapa de calor · cantidad de alertas</small></div><div id="heatmap-chart" class="chart-area"></div></div></div>
+    </section>
+  </main>
+</div>
+<div id="detail-drawer" class="drawer"><div class="drawer-head"><div><small>DETALLE DE ALERTA</small><h2 id="detail-title">Alerta</h2></div><button class="icon-btn" id="close-drawer">×</button></div><div id="detail-content"></div></div>
+<div id="login" class="login"><form id="login-form" class="login-box"><h1>SIA-LIMA</h1><p>Ingresa con tu cuenta de administrador.</p><label for="login-email">Correo</label><input id="login-email" type="email" autocomplete="username" required><label for="login-pass">Contraseña</label><input id="login-pass" type="password" autocomplete="current-password" required><div id="login-error" class="login-error" role="alert"></div><button class="primary-btn" type="submit">Entrar</button></form></div>
+<div id="modal-backdrop" class="modal-backdrop"><div class="modal" id="modal-content"></div></div>
+<div id="toast" class="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+/* Conexión con Supabase: inicio de sesión y acceso a las tablas. */
+
+/* ==========================================================
+   1. CONFIGURACIÓN
+   ========================================================== */
+const SB_URL = "https://zelgxkgqptcyzdobebkt.supabase.co";
+const SB_KEY = "sb_publishable_o-Fcw16ILyBgItgQcrIhwA_vMdupulf"; // sb_publishable_... (NUNCA la sb_secret_)
+
+/* ==========================================================
+   2. SESIÓN (guardada en sessionStorage)
+   ========================================================== */
+let ses = null;
+
+try {
+  ses = JSON.parse(sessionStorage.getItem("sia_ses") || "null");
+} catch { }
+
+function saveSes(s) {
+  ses = s;
+  try {
+    s
+      ? sessionStorage.setItem("sia_ses", JSON.stringify(s))
+      : sessionStorage.removeItem("sia_ses");
+  } catch { }
+}
+
+/* ==========================================================
+   3. AUTENTICACIÓN
+   ========================================================== */
+async function authPost(path, body) {
+  const r = await fetch(SB_URL + "/auth/v1/" + path, {
+    method: "POST",
+    headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+
+  const j = await r.json().catch(() => ({}));
+
+  if (!r.ok) {
+    throw new Error(
+      r.status === 400
+        ? "Correo o contraseña incorrectos."
+        : (j.msg || j.error_description || "No se pudo iniciar sesión.")
+    );
+  }
+  return j;
+}
+
+function guardarToken(j) {
+  saveSes({
+    access: j.access_token,
+    refresh: j.refresh_token,
+    exp: Date.now() + j.expires_in * 1000 - 30000
+  });
+}
+
+async function login(email, password) {
+  guardarToken(await authPost("token?grant_type=password", { email, password }));
+}
+
+async function token() {
+  if (!ses) throw new Error("401 sin sesión");
+
+  // Renueva el token si ya venció
+  if (Date.now() > ses.exp) {
+    guardarToken(await authPost("token?grant_type=refresh_token", { refresh_token: ses.refresh }));
+  }
+  return ses.access;
+}
+
+/* ==========================================================
+   4. ACCESO A LAS TABLAS (REST)
+   ========================================================== */
+async function rest(method, path, body) {
+  const t = await token();
+
+  const r = await fetch(SB_URL + "/rest/v1/" + path, {
+    method,
+    headers: {
+      apikey: SB_KEY,
+      Authorization: "Bearer " + t,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    throw new Error(r.status + " " + (j.message || r.statusText));
+  }
+
+  return method === "GET" ? r.json() : null;
+}
+
+/* ==========================================================
+   5. VERIFICACIÓN DE ADMINISTRADOR
+   ========================================================== */
+async function verificarAdmin() {
+  const r = await rest("GET", "administradores?select=user_id");
+  if (!r.length) {
+    saveSes(null);
+    throw new Error("Tu cuenta no tiene permiso de administrador.");
+  }
+}
+</script>
+<script>
+/* SIA-LIMA · prototipo front-end. Sustituir el contenido de estas funciones por llamadas a API. */
+
+/* ==========================================================
+   1. UTILIDADES Y ESTADO GLOBAL
+   ========================================================== */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const clone = x => JSON.parse(JSON.stringify(x));
+
+let db = { dispositivos: [], alertas: [], sin_registrar: [] };
+let inicio = false;
+let timer = null;
+let map, alertLayer, deviceLayer, heatLayer;
+let selectedRevision = "revisada";
+let soundOn = false;
+let showAlerts = true;
+let showDevices = true;
+
+const colors = {
+  DISPARO: "#e35c5c",
+  EXPLOSION: "#e35c5c",
+  GRITO: "#e6aa43",
+  VIDRIO: "#58a6d5",
+  PORTAZO: "#87939d",
+  DESCONOCIDO: "#87939d"
+};
+
+const names = {
+  GRITO: "Grito",
+  DISPARO: "Disparo",
+  VIDRIO: "Vidrio roto",
+  EXPLOSION: "Explosión",
+  PORTAZO: "Portazo",
+  DESCONOCIDO: "Desconocido"
+};
+
+const fmtTime = d =>
+  new Date(d).toLocaleTimeString("es-PE", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+  });
+
+const fmtDate = d =>
+  new Date(d).toLocaleString("es-PE", {
+    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: false
+  });
+
+const ago = d => {
+  const m = Math.max(0, Math.floor((Date.now() - new Date(d)) / 60000));
+  return m < 1
+    ? "Hace menos de 1 min"
+    : m < 60
+      ? `Hace ${m} min`
+      : `Hace ${Math.floor(m / 60)} h`;
+};
+
+const isOnline = d =>
+  d.estado === "activo" &&
+  Date.now() - new Date(d.ultimo_latido) < 15 * 60 * 1000;
+
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+const fallo = e => toast("No se pudo guardar: " + e.message);
+
+/* ==========================================================
+   2. CAPA DE DATOS (reemplazar por llamadas a la API)
+   ========================================================== */
+function cargarAlertas() {
+  return clone(db.alertas).sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en));
+}
+
+function cargarDispositivos() {
+  return clone(db.dispositivos);
+}
+
+function cargarSinRegistrar() {
+  return clone(db.sin_registrar);
+}
+
+function registrarDispositivo(data) {
+  const d = {
+    id: data.id,
+    nombre: data.nombre,
+    distrito: data.distrito,
+    direccion: data.direccion,
+    lat: data.lat,
+    lng: data.lng,
+    estado: "pendiente",
+    ultimo_latido: null,
+    creado_en: new Date().toISOString()
+  };
+  db.dispositivos.push(d);
+
+  rest("POST", "dispositivos", {
+    id: d.id,
+    nombre: d.nombre,
+    distrito: d.distrito,
+    direccion: d.direccion,
+    lat: d.lat,
+    lng: d.lng,
+    estado: "pendiente",
+    secreto: data.secreto
+  })
+    .then(() => rest("PATCH", "sin_registrar?id=eq." + encodeURIComponent(d.id), { ignorado: true }))
+    .catch(fallo);
+
+  return d;
+}
+
+function aprobarDispositivo(id) {
+  return true;
+}
+
+function ignorarDispositivo(id) {
+  db.sin_registrar = db.sin_registrar.filter(d => d.id !== id);
+  rest("PATCH", "sin_registrar?id=eq." + encodeURIComponent(id), { ignorado: true }).catch(fallo);
+}
+
+function actualizarRevision(id, revision, nota) {
+  const a = db.alertas.find(x => x.id === id);
+  if (!a) return false;
+  a.revision = revision;
+  a.nota = nota;
+  rest("PATCH", "alertas?id=eq." + String(id).replace("AL-", ""), { revision, nota }).catch(fallo);
+  return true;
+}
+
+function actualizarDispositivo(id, patch) {
+  const d = db.dispositivos.find(x => x.id === id);
+  if (d) Object.assign(d, patch);
+
+  const ok = ["nombre", "distrito", "direccion", "lat", "lng", "estado"];
+  const body = {};
+  ok.forEach(k => { if (k in patch) body[k] = patch[k]; });
+
+  if (Object.keys(body).length) {
+    rest("PATCH", "dispositivos?id=eq." + encodeURIComponent(id), body).catch(fallo);
+  }
+  return d;
+}
+
+function alertDevice(a) {
+  return db.dispositivos.find(d => d.id === a.dispositivo_id) || {};
+}
+
+/* ==========================================================
+   3. MAPA
+   ========================================================== */
+function initMap() {
+  map = L.map("map", { zoomControl: false }).setView([-12.055, -77.055], 11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+  L.control.zoom({ position: "bottomright" }).addTo(map);
+
+  alertLayer = L.layerGroup().addTo(map);
+  deviceLayer = L.layerGroup().addTo(map);
+  heatLayer = L.heatLayer ? L.heatLayer([], { radius: 28, blur: 22, maxZoom: 16 }) : null; // si falla leaflet-heat, el resto del panel sigue funcionando
+
+  renderMap();
+  setTimeout(() => map.invalidateSize(), 200);
+}
+
+function markerIcon(cls, color) {
+  return L.divIcon({
+    className: "",
+    html: `<div class="${cls}" style="background:${color || ""}"></div>`,
+    iconSize: [15, 15],
+    iconAnchor: [7, 7]
+  });
+}
+
+function renderMap() {
+  if (!map) return;
+  alertLayer.clearLayers();
+  deviceLayer.clearLayers();
+
+  const alerts = cargarAlertas();
+
+  // Alertas de las últimas 48 h
+  if (showAlerts) {
+    alerts
+      .filter(a => new Date(a.creado_en) > new Date(Date.now() - 48 * 3600000))
+      .forEach(a => {
+        const m = L.marker([a.lat, a.lng], { icon: markerIcon("marker-alert", colors[a.tipo]) })
+          .bindPopup(`<b>${names[a.tipo]}</b><br>${alertDevice(a).nombre || a.dispositivo_id}<br>${fmtDate(a.creado_en)}`);
+        m.on("click", () => abrirAlerta(a.id));
+        m.addTo(alertLayer);
+      });
+  }
+
+  // Dispositivos
+  if (showDevices) {
+    cargarDispositivos().forEach(d => {
+      const online = isOnline(d);
+      const m = L.marker([d.lat, d.lng], { icon: markerIcon("marker-device" + (online ? "" : " offline")) })
+        .bindPopup(`<b>${d.nombre}</b><br>${d.id}<br>${online ? "Activo" : "Sin señal"}`);
+      m.on("click", () => abrirDispositivo(d.id));
+      m.addTo(deviceLayer);
+    });
+  }
+
+  // Mapa de calor
+  if (heatLayer && heatLayer._map) map.removeLayer(heatLayer);
+  if (heatLayer && $("#heat-toggle").classList.contains("selected")) {
+    heatLayer.setLatLngs(alerts.map(a => [a.lat, a.lng, Math.max(.3, a.energia / 1000)]));
+    heatLayer.addTo(map);
+  }
+}
+
+/* ==========================================================
+   4. RENDER: MÉTRICAS, ALERTAS, DISPOSITIVOS, SIN REGISTRAR
+   ========================================================== */
+function renderMetrics() {
+  const a = cargarAlertas();
+  const today = new Date().toDateString();
+  const d = cargarDispositivos();
+  const active = d.filter(isOnline).length;
+  const last = a[0];
+
+  $("#metric-alerts").textContent = a.filter(x => new Date(x.creado_en).toDateString() === today).length;
+  $("#metric-devices").textContent = `${active} / ${d.length}`;
+  $("#metric-device-foot").textContent = `${d.length - active} requieren revisión`;
+  $("#metric-last").textContent = last ? fmtTime(last.creado_en) : "—";
+  $("#metric-last-foot").textContent = last
+    ? `${names[last.tipo]} · ${alertDevice(last).distrito}`
+    : "Sin alertas recientes";
+  $("#metric-pending").textContent = a.filter(x => x.revision === "nueva").length;
+}
+
+function renderAlerts() {
+  const type = $("#alert-type-filter").value;
+  const dist = $("#alert-district-filter").value;
+  const a = cargarAlertas().filter(x =>
+    (!type || x.tipo === type) && (!dist || alertDevice(x).distrito === dist)
+  );
+
+  $("#alert-total").textContent = `${a.length} eventos`;
+  $("#alert-list").innerHTML =
+    a.map(x => {
+      const d = alertDevice(x);
+      return `<div class="alert-item ${x.revision === "nueva" ? "new" : ""}" data-id="${x.id}"><i class="sev ${x.tipo}"></i><div class="alert-main"><b>${names[x.tipo]}</b><p>${d.nombre || x.dispositivo_id} · ${d.distrito || "Sin distrito"}</p><small>${x.id} · ${x.revision.replace("_", " ")}</small></div><span class="alert-time">${fmtTime(x.creado_en)}</span></div>`;
+    }).join("") || `<div class="empty-state">No hay alertas para estos filtros.</div>`;
+
+  $$(".alert-item").forEach(el => el.onclick = () => abrirAlerta(el.dataset.id));
+}
+
+function populateDistricts() {
+  const ds = [...new Set(db.dispositivos.map(d => d.distrito))].sort();
+  ["alert-district-filter", "device-district", "analysis-district"].forEach(id => {
+    const s = $("#" + id);
+    const v = s.value;
+    s.innerHTML = '<option value="">Todos los distritos</option>' + ds.map(d => `<option>${d}</option>`).join("");
+    s.value = v;
+  });
+}
+
+function renderDevices() {
+  const q = $("#device-search").value.toLowerCase();
+  const dist = $("#device-district").value;
+  const state = $("#device-state").value;
+
+  const list = cargarDispositivos().filter(d =>
+    (!q || `${d.nombre} ${d.id}`.toLowerCase().includes(q)) &&
+    (!dist || d.distrito === dist) &&
+    (!state || (state === "sin señal" ? !isOnline(d) : d.estado === state))
+  );
+
+  $("#device-table").innerHTML = list.map(d => {
+    const a = db.alertas.filter(x => x.dispositivo_id === d.id);
+    const n24 = a.filter(x => Date.now() - new Date(x.creado_en) < 86400000).length;
+    const n7 = a.filter(x => Date.now() - new Date(x.creado_en) < 604800000).length;
+    const st = d.estado === "bloqueado" ? "bloqueado"
+      : d.estado === "pendiente" ? "pendiente"
+      : isOnline(d) ? "activo"
+      : "offline";
+    const label = st === "offline" ? "Sin señal" : st[0].toUpperCase() + st.slice(1);
+
+    return `<tr><td><b>${d.nombre}</b></td><td class="mono">${d.id}</td><td>${d.distrito}</td><td><span class="state ${st}">${label}</span></td><td>${d.ultimo_latido ? ago(d.ultimo_latido) : "Sin señal"}</td><td class="mono">${n24}</td><td class="mono">${n7}</td><td><button class="row-action" data-device="${d.id}">Ver ficha</button></td></tr>`;
+  }).join("");
+
+  $("#device-empty").classList.toggle("hidden", list.length > 0);
+  $$("[data-device]").forEach(b => b.onclick = () => abrirDispositivo(b.dataset.device));
+}
+
+function renderUnknown() {
+  const u = cargarSinRegistrar();
+  $("#unknown-count").textContent = u.length;
+
+  $("#unknown-list").innerHTML =
+    u.map(x => `<div class="unknown-card"><div><b>${x.id}</b><small>Visto ${fmtDate(x.visto)} · ${x.lat != null ? x.lat.toFixed(4) + ", " + x.lng.toFixed(4) : "Sin GPS"}</small></div><div class="actions"><button class="approve" data-approve="${x.id}">Aprobar</button><button class="ignore" data-ignore="${x.id}">Ignorar</button></div></div>`).join("")
+    || '<div class="empty-state">No hay dispositivos pendientes de registro.</div>';
+
+  $$("[data-approve]").forEach(b => b.onclick = () => {
+    const x = db.sin_registrar.find(y => y.id === b.dataset.approve);
+    registerFlow(x);
+  });
+
+  $$("[data-ignore]").forEach(b => b.onclick = () => {
+    ignorarDispositivo(b.dataset.ignore);
+    renderUnknown();
+    toast("Solicitud ignorada.");
+  });
+}
+
+/* ==========================================================
+   5. PANEL DE DETALLE (ALERTA / DISPOSITIVO)
+   ========================================================== */
+function abrirAlerta(id) {
+  const a = db.alertas.find(x => x.id === id);
+  if (!a) return;
+  const d = alertDevice(a);
+
+  $("#detail-title").textContent = names[a.tipo];
+  $("#detail-content").innerHTML = `<div class="detail-block"><div class="detail-grid"><div><small>ID de alerta</small><b class="mono">${a.id}</b></div><div><small>Hora exacta</small><b>${new Date(a.creado_en).toLocaleString("es-PE")}</b></div><div><small>Tipo de evento</small><b>${names[a.tipo]}</b></div><div><small>Revisión</small><b>${a.revision.replace("_", " ")}</b></div></div></div><div class="detail-block"><h3>Dispositivo que la envió</h3><div class="detail-grid"><div><small>Nombre</small><b>${d.nombre || "No disponible"}</b></div><div><small>ID</small><b class="mono">${d.id || a.dispositivo_id}</b></div><div><small>Distrito</small><b>${d.distrito || "—"}</b></div><div><small>Dirección</small><b>${d.direccion || "—"}</b></div></div></div><div class="detail-block"><h3>Ubicación</h3><div class="detail-map" id="detail-map"></div><small>${a.lat.toFixed(5)}, ${a.lng.toFixed(5)}</small></div><div class="detail-block"><h3>Datos del sonido</h3><div class="detail-grid"><div><small>Pico</small><b>${a.pico}</b></div><div><small>Duración</small><b>${a.dur} ms</b></div><div><small>Golpes</small><b>${a.golpes}</b></div><div><small>Subida</small><b>${a.subida} ms</b></div><div><small>Energía</small><b>${a.energia}</b></div><div><small>Alarma</small><b>${a.alarma ? "Sí" : "No"}</b></div></div><small class="muted">No se almacena ni reproduce audio.</small></div><div class="detail-block"><h3>Registrar revisión</h3><div class="detail-actions">${["revisada", "falsa_alarma", "confirmada"].map(r => `<button class="${a.revision === r ? "active" : ""}" data-revision="${r}">${r === "revisada" ? "Marcar revisada" : r === "falsa_alarma" ? "Falsa alarma" : "Confirmada"}</button>`).join("")}</div><textarea id="revision-note" placeholder="Añadir una nota para el siguiente turno…">${a.nota || ""}</textarea><button class="primary-btn" id="save-revision" style="margin-top:9px;width:100%">Guardar revisión</button></div>`;
+
+  $("#detail-drawer").classList.add("open");
+
+  $$("[data-revision]").forEach(b => b.onclick = () => {
+    selectedRevision = b.dataset.revision;
+    $$("[data-revision]").forEach(x => x.classList.toggle("active", x === b));
+  });
+
+  $("#save-revision").onclick = () => {
+    actualizarRevision(id, selectedRevision, $("#revision-note").value);
+    $("#detail-drawer").classList.remove("open");
+    refresh();
+    toast("Revisión guardada.");
+  };
+
+  selectedRevision = a.revision === "nueva" ? "revisada" : a.revision;
+
+  setTimeout(() => {
+    const m = L.map("detail-map", {
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      scrollWheelZoom: false
+    }).setView([a.lat, a.lng], 16);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(m);
+    L.marker([a.lat, a.lng]).addTo(m);
+  }, 100);
+}
+
+function abrirDispositivo(id) {
+  const d = db.dispositivos.find(x => x.id === id);
+  if (!d) return;
+  const a = cargarAlertas().filter(x => x.dispositivo_id === id);
+
+  $("#detail-title").textContent = d.nombre;
+  $("#detail-content").innerHTML = `<div class="detail-block"><div class="detail-grid"><div><small>ID</small><b class="mono">${d.id}</b></div><div><small>Estado</small><b>${isOnline(d) ? "Activo" : d.estado === "bloqueado" ? "Bloqueado" : "Sin señal"}</b></div><div><small>Distrito</small><b>${d.distrito}</b></div><div><small>Última señal</small><b>${d.ultimo_latido ? fmtDate(d.ultimo_latido) : "Sin señal"}</b></div><div style="grid-column:span 2"><small>Dirección</small><b>${d.direccion}</b></div></div></div><div class="detail-block"><h3>Acciones</h3><div class="detail-actions"><button id="edit-device">Editar datos</button><button id="block-device">${d.estado === "bloqueado" ? "Desbloquear" : "Bloquear"}</button><button id="regen-code">Regenerar código</button></div></div><div class="detail-block"><h3>Historial de alertas (${a.length})</h3>${a.map(x => `<div class="alert-item" data-history="${x.id}"><i class="sev ${x.tipo}"></i><div class="alert-main"><b>${names[x.tipo]}</b><p>${fmtDate(x.creado_en)}</p><small>${x.revision}</small></div></div>`).join("") || '<p class="muted">Este dispositivo aún no tiene alertas.</p>'}</div>`;
+
+  $("#detail-drawer").classList.add("open");
+
+  $("#block-device").onclick = () => {
+    actualizarDispositivo(id, { estado: d.estado === "bloqueado" ? "activo" : "bloqueado" });
+    $("#detail-drawer").classList.remove("open");
+    refresh();
+    toast("Estado del dispositivo actualizado.");
+  };
+
+  $("#regen-code").onclick = () => showModal(`<h2>Nuevo código de un solo uso</h2><p>El código anterior dejará de funcionar. Se mostrará una sola vez.</p><div class="secret">SL-${Math.random().toString(36).slice(2, 8).toUpperCase()}</div><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cerrar</button></div>`);
+
+  $("#edit-device").onclick = () => formEditDevice(d);
+  $$("[data-history]").forEach(b => b.onclick = () => abrirAlerta(b.dataset.history));
+}
+
+/* ==========================================================
+   6. MODALES Y REGISTRO DE DISPOSITIVO
+   ========================================================== */
+function showModal(html) {
+  $("#modal-content").innerHTML = html;
+  $("#modal-backdrop").classList.add("open");
+}
+
+function closeModal() {
+  $("#modal-backdrop").classList.remove("open");
+}
+window.closeModal = closeModal;
+
+let reg = { step: 1, nombre: "", distrito: "", direccion: "", lat: -12.056, lng: -77.03 };
+
+function hex(n) {
+  return [...crypto.getRandomValues(new Uint8Array(n))]
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function registerFlow(x) {
+  reg = {
+    step: 1,
+    nombre: "",
+    distrito: "",
+    direccion: "",
+    lat: x && x.lat != null ? x.lat : -12.056,
+    lng: x && x.lng != null ? x.lng : -77.03,
+    id: x ? x.id : "SIA-" + hex(3).toUpperCase(),
+    secreto: hex(16)
+  };
+  renderRegModal();
+}
+
+function renderRegModal() {
+  let body = "";
+
+  if (reg.step === 1) {
+    body = `<h2>Registrar dispositivo</h2><p>Paso 1 de 4 · Identifica el equipo.</p><label>Nombre del dispositivo</label><input id="reg-name" placeholder="Ej. Cruce Av. Central" value="${reg.nombre}"><label>Distrito</label><select id="reg-district">${["Comas", "San Juan de Lurigancho", "La Victoria", "Miraflores", "Callao", "Villa El Salvador"].map(x => `<option ${reg.distrito === x ? "selected" : ""}>${x}</option>`).join("")}</select>`;
+  }
+
+  if (reg.step === 2) {
+    body = `<h2>Ubicación del dispositivo</h2><p>Paso 2 de 4 · Coloca el punto en el mapa y completa la dirección.</p><div id="register-map" style="height:230px;background:var(--bg)"></div><label>Dirección o referencia</label><input id="reg-address" placeholder="Av. / calle, número o referencia" value="${reg.direccion}"><small>Coordenadas: ${reg.lat.toFixed(5)}, ${reg.lng.toFixed(5)}</small>`;
+  }
+
+  if (reg.step === 3) {
+    body = `<h2>Código de instalación</h2><p>Paso 3 de 4 · Copia el ID y el código (dos líneas) y grábalos en el dispositivo.</p><div class="notice" style="margin:10px 0">Este código es secreto, sirve una sola vez y no volverá a mostrarse.</div><div class="secret" id="one-time-code" style="font-size:14px;white-space:pre-line">${reg.id}
+${reg.secreto}</div><button class="secondary-btn" id="copy-code" style="width:100%">Copiar código</button>`;
+  }
+
+  if (reg.step === 4) {
+    body = `<h2>Esperando primera señal</h2><p>Paso 4 de 4 · Enciende el dispositivo para comprobar la conexión.</p><div class="notice" style="margin:10px 0">El equipo aparecerá como pendiente hasta recibir su primera señal.</div><div style="padding:22px;text-align:center;color:var(--muted)">◌<p>Esperando conexión del dispositivo…</p><small>Pasará a activo con su primer mensaje firmado.</small></div>`;
+  }
+
+  showModal(`<div class="stepper">${[1, 2, 3, 4].map(n => `<i class="step ${n <= reg.step ? "done" : ""}"></i>`).join("")}</div>${body}<div class="modal-actions"><button class="secondary-btn" id="reg-cancel">Cancelar</button>${reg.step > 1 ? '<button class="secondary-btn" id="reg-back">Atrás</button>' : ""}<button class="primary-btn" id="reg-next">${reg.step === 4 ? "Listo" : "Continuar"}</button></div>`);
+
+  $("#reg-cancel").onclick = closeModal;
+
+  if ($("#reg-back")) {
+    $("#reg-back").onclick = () => { reg.step--; renderRegModal(); };
+  }
+
+  $("#reg-next").onclick = () => {
+    if (reg.step === 1) {
+      reg.nombre = $("#reg-name").value.trim();
+      reg.distrito = $("#reg-district").value;
+      if (!reg.nombre) { toast("Escribe un nombre para el dispositivo."); return; }
+    }
+    if (reg.step === 2) {
+      reg.direccion = $("#reg-address").value.trim();
+      if (!reg.direccion) { toast("Escribe una dirección."); return; }
+    }
+    if (reg.step === 4) {
+      registrarDispositivo(reg);
+      closeModal();
+      refresh();
+      toast("Dispositivo registrado como pendiente.");
+      return;
+    }
+    reg.step++;
+    renderRegModal();
+  };
+
+  if (reg.step === 2) {
+    const m = L.map("register-map").setView([reg.lat, reg.lng], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(m);
+    const marker = L.marker([reg.lat, reg.lng], { draggable: true }).addTo(m);
+    marker.on("dragend", () => {
+      const p = marker.getLatLng();
+      reg.lat = p.lat;
+      reg.lng = p.lng;
+    });
+  }
+
+  if (reg.step === 3) {
+    $("#copy-code").onclick = () => {
+      navigator.clipboard?.writeText($("#one-time-code").textContent);
+      toast("Código copiado.");
+    };
+  }
+}
+
+function formEditDevice(d) {
+  showModal(`<h2>Editar dispositivo</h2><p>Actualiza su nombre, distrito y dirección.</p><label>Nombre</label><input id="edit-name" value="${d.nombre}"><label>Distrito</label><input id="edit-district" value="${d.distrito}"><label>Dirección</label><input id="edit-address" value="${d.direccion}"><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancelar</button><button class="primary-btn" id="save-device">Guardar</button></div>`);
+
+  $("#save-device").onclick = () => {
+    actualizarDispositivo(d.id, {
+      nombre: $("#edit-name").value,
+      distrito: $("#edit-district").value,
+      direccion: $("#edit-address").value
+    });
+    closeModal();
+    $("#detail-drawer").classList.remove("open");
+    refresh();
+    toast("Datos actualizados.");
+  };
+}
+
+/* ==========================================================
+   7. ANÁLISIS (GRÁFICOS SVG) Y EXPORTACIÓN
+   ========================================================== */
+function svgBars(container, items, { max = 0, format = x => x } = {}) {
+  const w = container.clientWidth || 500;
+  const h = 175;
+  const pad = 30;
+  const mx = max || Math.max(1, ...items.map(x => x.value));
+  const bar = Math.min(22, (w - pad * 2) / Math.max(1, items.length) * .55);
+  const gap = (w - pad * 2) / Math.max(1, items.length);
+
+  container.innerHTML = `<svg viewBox="0 0 ${w} ${h}">${items.map((x, i) => {
+    const bh = x.value / mx * 118;
+    const y = 137 - bh;
+    const xx = pad + i * gap + (gap - bar) / 2;
+    return `<rect x="${xx}" y="${y}" width="${bar}" height="${bh}" fill="${x.color || 'var(--accent)'}" opacity=".88"/><text x="${xx + bar / 2}" y="${y - 5}" fill="var(--soft)" font-size="9" text-anchor="middle">${format(x.value)}</text><text x="${xx + bar / 2}" y="153" fill="var(--muted)" font-size="8" text-anchor="middle">${x.label}</text>`;
+  }).join("")}<line x1="${pad}" y1="137" x2="${w - pad / 2}" y2="137" stroke="var(--line)"/></svg>`;
+}
+
+function renderAnalysis() {
+  const from = $("#date-from").value
+    ? new Date($("#date-from").value + "T00:00:00")
+    : new Date(Date.now() - 7 * 86400000);
+  const to = $("#date-to").value
+    ? new Date($("#date-to").value + "T23:59:59")
+    : new Date();
+  const dist = $("#analysis-district").value;
+  const type = $("#analysis-type").value;
+
+  const a = cargarAlertas().filter(x =>
+    new Date(x.creado_en) >= from &&
+    new Date(x.creado_en) <= to &&
+    (!dist || alertDevice(x).distrito === dist) &&
+    (!type || x.tipo === type)
+  );
+
+  // --- Por distrito ---
+  const districts = [...new Set(db.dispositivos.map(d => d.distrito))];
+  const by = districts.map(n => {
+    const v = a.filter(x => alertDevice(x).distrito === n).length;
+    const devices = db.dispositivos.filter(d => d.distrito === n).length;
+    return {
+      label: n.replace("San Juan de ", "S.J. ").replace("Villa El Salvador", "V. Salvador").replace("Cercado de Lima", "Cercado"),
+      value: v,
+      per: devices ? (v / devices).toFixed(1) : 0
+    };
+  });
+  svgBars($("#district-chart"), by);
+  $("#district-chart").insertAdjacentHTML("beforeend", `<div style="display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-top:2px">${by.map(x => `<span>${x.label}: <b style="color:var(--text)">${x.value}</b> · ${x.per} por dispositivo</span>`).join("")}</div>`);
+
+  // --- Por tipo ---
+  const types = Object.keys(names).map(t => ({
+    label: names[t].split(" ")[0],
+    value: a.filter(x => x.tipo === t).length,
+    color: colors[t]
+  }));
+  svgBars($("#type-chart"), types);
+
+  // --- Tendencia 7 días ---
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    days.push({
+      label: d.toLocaleDateString("es-PE", { weekday: "short" }),
+      value: a.filter(x => new Date(x.creado_en).toDateString() === d.toDateString()).length
+    });
+  }
+  svgBars($("#trend-chart"), days);
+
+  // --- Mapa de calor día/hora ---
+  const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
+  a.forEach(x => {
+    const d = new Date(x.creado_en);
+    matrix[(d.getDay() + 6) % 7][d.getHours()]++;
+  });
+  const max = Math.max(1, ...matrix.flat());
+  const labels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+  $("#heatmap-chart").innerHTML = `<div style="display:grid;grid-template-columns:32px repeat(24,1fr);gap:3px">${labels.map((day, i) => `<span style="font-size:9px;color:var(--muted);align-self:center">${day}</span>${matrix[i].map((v, h) => `<i title="${day} ${h}:00 · ${v} alertas" style="height:17px;background:rgba(77,157,190,${v ? 0.15 + v / max * .8 : .04});border:1px solid var(--line)"></i>`).join("")}`).join("")}</div><div style="display:flex;justify-content:space-between;color:var(--muted);font-size:9px;margin:7px 0 0 35px"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span></div>`;
+}
+
+function exportCSV() {
+  const a = cargarAlertas().map(x => ({ ...x, dispositivo_nombre: alertDevice(x).nombre || "" }));
+  const headers = Object.keys(a[0] || {});
+  const csv = [
+    headers.join(","),
+    ...a.map(x => headers.map(k => `"${String(x[k] ?? "").replaceAll('"', '""')}"`).join(","))
+  ].join("\n");
+
+  const url = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "sia-lima-alertas.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ==========================================================
+   8. NAVEGACIÓN, REFRESCO E INICIALIZACIÓN
+   ========================================================== */
+function refresh() {
+  renderMetrics();
+  renderAlerts();
+  renderDevices();
+  renderUnknown();
+  renderMap();
+  if ($("#view-analisis").classList.contains("active")) renderAnalysis();
+}
+
+function switchView(v) {
+  $$(".view").forEach(x => x.classList.toggle("active", x.id === "view-" + v));
+  $$(".nav-item").forEach(x => x.classList.toggle("active", x.dataset.view === v));
+  $("#page-title").textContent = ({
+    mando: "Centro de mando",
+    dispositivos: "Dispositivos",
+    sinregistro: "Dispositivos sin registrar",
+    analisis: "Análisis"
+  })[v];
+  if (v === "analisis") renderAnalysis();
+  if (v === "mando" && map) setTimeout(() => map.invalidateSize(), 100);
+}
+
+function tick() {
+  $("#clock").textContent = new Date().toLocaleTimeString("es-PE", { hour12: false });
+  renderMetrics();
+}
+
+function init() {
+  try { initMap(); } catch (e) { console.error("Error al iniciar el mapa:", e); }
+  try { populateDistricts(); refresh(); } catch (e) { console.error("Error al dibujar el panel:", e); }
+
+  $$(".nav-item").forEach(b => b.onclick = () => switchView(b.dataset.view));
+  $("#new-device").onclick = () => registerFlow();
+  $("#close-drawer").onclick = () => $("#detail-drawer").classList.remove("open");
+  $("#modal-backdrop").onclick = e => { if (e.target.id === "modal-backdrop") closeModal(); };
+
+  ["alert-type-filter", "alert-district-filter"].forEach(id => $("#" + id).onchange = renderAlerts);
+  ["device-search", "device-district", "device-state"].forEach(id => $("#" + id).addEventListener("input", renderDevices));
+
+  $("#show-alerts").onclick = () => {
+    showAlerts = !showAlerts;
+    $("#show-alerts").classList.toggle("selected", showAlerts);
+    renderMap();
+  };
+  $("#show-devices").onclick = () => {
+    showDevices = !showDevices;
+    $("#show-devices").classList.toggle("selected", showDevices);
+    renderMap();
+  };
+  $("#heat-toggle").onclick = () => {
+    $("#heat-toggle").classList.toggle("selected");
+    renderMap();
+  };
+  $("#sound-toggle").onclick = () => {
+    soundOn = !soundOn;
+    $("#sound-toggle").textContent = soundOn ? "♫" : "♪";
+    toast(soundOn ? "Avisos sonoros activados" : "Avisos sonoros silenciados");
+  };
+  $("#theme-toggle").onclick = () => {
+    const light = document.body.dataset.theme !== "light";
+    document.body.dataset.theme = light ? "light" : "dark";
+    $("#theme-toggle").innerHTML = light
+      ? "☾ <span>Usar tema oscuro</span>"
+      : "☼ <span>Usar tema claro</span>";
+  };
+
+  $("#export-csv").onclick = exportCSV;
+  $("#apply-analysis").onclick = renderAnalysis;
+  $("#alert-list").addEventListener("click", () => { });
+  $("#logout").onclick = salir;
+  $("#help-btn").onclick = () => toast("Selecciona una alerta para consultar sus datos y registrar la revisión.");
+
+  setInterval(tick, 1000);
+  setInterval(() => { renderMetrics(); renderMap(); }, 30000);
+}
+
+/* ==========================================================
+   9. SINCRONIZACIÓN CON LA API, LOGIN Y ARRANQUE
+   ========================================================== */
+async function sincronizar() {
+  try {
+    const [d, a, u] = await Promise.all([
+      rest("GET", "dispositivos?select=id,nombre,distrito,direccion,lat,lng,estado,ultimo_latido,creado_en&order=creado_en.asc"),
+      rest("GET", "alertas?select=id,dispositivo_id,tipo,alarma,pico,dur,golpes,subida,energia,lat,lng,creado_en,revision,nota&order=creado_en.desc&limit=500"),
+      rest("GET", "sin_registrar?select=id,visto,lat,lng&ignorado=eq.false&order=visto.desc")
+    ]);
+
+    const pos = {};
+    d.forEach(x => pos[x.id] = x);
+
+    db.dispositivos = d.map(x => ({
+      ...x,
+      nombre: x.nombre || x.id,
+      distrito: x.distrito || "Sin distrito",
+      direccion: x.direccion || ""
+    }));
+
+    db.alertas = a.map(x => {
+      const v = pos[x.dispositivo_id] || {};
+      return {
+        ...x,
+        id: "AL-" + x.id,
+        lat: x.lat ?? v.lat ?? -12.0464,
+        lng: x.lng ?? v.lng ?? -77.0428,
+        revision: x.revision || "nueva",
+        nota: x.nota || "",
+        pico: x.pico || 0,
+        dur: x.dur || 0,
+        golpes: x.golpes || 0,
+        subida: x.subida || 0,
+        energia: x.energia || 0
+      };
+    });
+
+    db.sin_registrar = u;
+    populateDistricts();
+    refresh();
+  } catch (e) {
+    if (String(e.message).startsWith("401")) salir();
+    else console.error(e);
+  }
+}
+
+async function entrar() {
+  await verificarAdmin();
+  $("#login").classList.add("hidden");
+  await sincronizar();
+  if (!inicio) { inicio = true; init(); }
+  clearInterval(timer);
+  timer = setInterval(sincronizar, 5000);
+}
+
+function salir() {
+  saveSes(null);
+  clearInterval(timer);
+  location.reload();
+}
+
+function arrancar() {
+  $("#login-form").onsubmit = async e => {
+    e.preventDefault();
+    $("#login-error").textContent = "";
+    try {
+      await login($("#login-email").value.trim(), $("#login-pass").value);
+      await entrar();
+    } catch (err) {
+      $("#login-error").textContent = err.message;
+    }
+  };
+  if (ses) entrar().catch(() => saveSes(null));
+}
+
+document.addEventListener("DOMContentLoaded", arrancar);
+</script>
+</body></html>
