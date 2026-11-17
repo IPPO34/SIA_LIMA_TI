@@ -587,6 +587,38 @@ function hex(n) {
     .join("");
 }
 
+/* ==========================================================
+   Registro de dispositivos con nombre e ID automáticos por distrito
+   Pega este bloque en lugar de registerFlow() y renderRegModal()
+   ========================================================== */
+
+// Código de 3 letras por distrito (cada código es único)
+const CODIGOS = {
+  "Ancón": "ANC", "Ate": "ATE", "Barranco": "BAR", "Bellavista": "BEL", "Breña": "BRE",
+  "Callao": "CAL", "Carabayllo": "CAR", "Carmen de la Legua Reynoso": "CLR", "Cercado de Lima": "CER",
+  "Chaclacayo": "CHA", "Chorrillos": "CHO", "Cieneguilla": "CIE", "Comas": "COM", "El Agustino": "AGU",
+  "Independencia": "IND", "Jesús María": "JMA", "La Molina": "MOL", "La Perla": "PER", "La Punta": "LPU",
+  "La Victoria": "LAV", "Lince": "LIN", "Los Olivos": "OLI", "Lurigancho-Chosica": "LCH", "Lurín": "LUR",
+  "Magdalena del Mar": "MAG", "Mi Perú": "MPE", "Miraflores": "MIR", "Pachacámac": "PAC", "Pucusana": "PUC",
+  "Pueblo Libre": "PLI", "Puente Piedra": "PPI", "Punta Hermosa": "PHE", "Punta Negra": "PNE", "Rímac": "RIM",
+  "San Bartolo": "SBA", "San Borja": "SBO", "San Isidro": "SIS", "San Juan de Lurigancho": "SJL",
+  "San Juan de Miraflores": "SJM", "San Luis": "SLU", "San Martín de Porres": "SMP", "San Miguel": "SMI",
+  "Santa Anita": "SAT", "Santa María del Mar": "SMM", "Santa Rosa": "SRO", "Santiago de Surco": "SUR",
+  "Surquillo": "SUQ", "Ventanilla": "VEN", "Villa El Salvador": "VES", "Villa María del Triunfo": "VMT"
+};
+
+// Siguiente código libre del distrito, por ejemplo COM-01, COM-02...
+function codigoDispositivo(distrito) {
+  const pre = CODIGOS[distrito] || "SIA";
+  const re = new RegExp("^" + pre + "-(\\d+)");
+  let max = 0;
+  db.dispositivos.forEach(d => [d.id, d.nombre].forEach(t => {
+    const m = re.exec(String(t || ""));
+    if (m) max = Math.max(max, +m[1]);
+  }));
+  return pre + "-" + String(max + 1).padStart(2, "0");
+}
+
 function registerFlow(x) {
   reg = {
     step: 1,
@@ -595,7 +627,9 @@ function registerFlow(x) {
     direccion: "",
     lat: x && x.lat != null ? x.lat : -12.056,
     lng: x && x.lng != null ? x.lng : -77.03,
-    id: x ? x.id : "SIA-" + hex(3).toUpperCase(),
+    id: x ? x.id : "",               // si viene de "Sin registrar" conserva su ID
+    deSinRegistrar: !!x,
+    autoNombre: "",
     secreto: hex(16)
   };
   renderRegModal();
@@ -605,7 +639,7 @@ function renderRegModal() {
   let body = "";
 
   if (reg.step === 1) {
-    body = `<h2>Registrar dispositivo</h2><p>Paso 1 de 4 · Identifica el equipo.</p><label>Nombre del dispositivo</label><input id="reg-name" placeholder="Ej. Cruce Av. Central" value="${reg.nombre}"><label>Distrito</label><select id="reg-district"><option value="">Selecciona un distrito</option>${DISTRITOS.map(x => `<option ${reg.distrito === x ? "selected" : ""}>${x}</option>`).join("")}</select>`;
+    body = `<h2>Registrar dispositivo</h2><p>Paso 1 de 4 · Elige el distrito y el sistema propone el nombre y el ID.</p><label>Distrito</label><select id="reg-district"><option value="">Selecciona un distrito</option>${DISTRITOS.map(x => `<option ${reg.distrito === x ? "selected" : ""}>${x}</option>`).join("")}</select><label>Nombre del dispositivo</label><input id="reg-name" placeholder="Primero elige el distrito" value="${reg.nombre}"><small id="reg-id-preview" style="display:block;margin-top:6px;color:var(--muted)"></small>`;
   }
 
   if (reg.step === 2) {
@@ -625,6 +659,19 @@ ${reg.secreto}</div><button class="secondary-btn" id="copy-code" style="width:10
 
   $("#reg-cancel").onclick = closeModal;
 
+  // Paso 1: al elegir el distrito se propone el nombre (sin pisar lo que el usuario ya escribió)
+  if (reg.step === 1) {
+    const sel = $("#reg-district"), inp = $("#reg-name"), prev = $("#reg-id-preview");
+    const sugerir = () => {
+      if (!sel.value) { prev.textContent = ""; return; }
+      const cod = codigoDispositivo(sel.value);
+      if (!inp.value.trim() || inp.value === reg.autoNombre) { inp.value = cod; reg.autoNombre = cod; }
+      prev.textContent = "ID del dispositivo: " + (reg.deSinRegistrar ? reg.id : cod) + " · puedes agregar una referencia al nombre, ej. " + cod + " · Av. Central";
+    };
+    sel.onchange = sugerir;
+    sugerir();
+  }
+
   if ($("#reg-back")) {
     $("#reg-back").onclick = () => { reg.step--; renderRegModal(); };
   }
@@ -633,8 +680,9 @@ ${reg.secreto}</div><button class="secondary-btn" id="copy-code" style="width:10
     if (reg.step === 1) {
       reg.nombre = $("#reg-name").value.trim();
       reg.distrito = $("#reg-district").value;
-      if (!reg.nombre) { toast("Escribe un nombre para el dispositivo."); return; }
       if (!reg.distrito) { toast("Elige un distrito."); return; }
+      if (!reg.nombre) { toast("Escribe un nombre para el dispositivo."); return; }
+      if (!reg.deSinRegistrar) reg.id = codigoDispositivo(reg.distrito);   // ID automático: COM-01, COM-02...
     }
     if (reg.step === 2) {
       reg.direccion = $("#reg-address").value.trim();
