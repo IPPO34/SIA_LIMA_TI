@@ -39,8 +39,8 @@
     </section>
     <section id="view-mando" class="view active">
       <div class="map-layout">
-        <div class="map-wrap"><div class="map-tools"><div><strong>Mapa de alertas</strong><small>Lima Metropolitana y Callao</small></div><div class="map-controls"><button id="show-alerts" class="small-btn selected">Alertas</button><button id="show-devices" class="small-btn selected">Dispositivos</button><button id="heat-toggle" class="small-btn">Calor</button></div></div><div id="map"></div><div class="map-legend"><span><i class="dot red"></i> Disparo / Explosión</span><span><i class="dot amber"></i> Grito</span><span><i class="dot blue"></i> Vidrio</span><span><i class="dot gray"></i> Portazo / Desconocido</span><span><i class="device-dot"></i> Dispositivo activo</span><span><i class="device-dot offline"></i> Sin señal</span></div></div>
-        <aside class="alerts-panel"><div class="panel-head"><div><h2>Alertas en vivo</h2><small id="alert-total">— eventos</small></div><button id="filter-alerts" class="icon-btn" title="Filtrar alertas">☷</button></div><div class="alert-filters"><select id="alert-type-filter"><option value="">Todos los tipos</option><option>GRITO</option><option>DISPARO</option><option>VIDRIO</option><option>EXPLOSION</option><option>PORTAZO</option><option>DESCONOCIDO</option></select><select id="alert-district-filter"><option value="">Todos los distritos</option></select></div><div id="alert-list" class="alert-list"></div><div class="panel-foot"><span>Actualización automática</span><span class="pulse"></span></div></aside>
+        <div class="map-wrap"><div class="map-tools"><div><strong>Mapa de alertas</strong><small>Lima Metropolitana y Callao</small></div><div class="map-controls"><button id="show-alerts" class="small-btn selected">Alertas</button><button id="show-devices" class="small-btn selected">Dispositivos</button><button id="heat-toggle" class="small-btn">Calor</button></div></div><div id="map"></div><div class="map-legend"><span><i class="dot red"></i> Disparo / Explosión</span><span><i class="dot amber"></i> Grito</span><span><i class="dot blue"></i> Vidrio</span><span><i class="dot gray"></i>Desconocido</span><span><i class="device-dot"></i> Dispositivo activo</span><span><i class="device-dot offline"></i> Sin señal</span></div></div>
+        <aside class="alerts-panel"><div class="panel-head"><div><h2>Alertas en vivo</h2><small id="alert-total">— eventos</small></div><button id="filter-alerts" class="icon-btn" title="Filtrar alertas">☷</button></div><div class="alert-filters"><select id="alert-type-filter"><option value="">Todos los tipos</option><option>GRITO</option><option>DISPARO</option><option>VIDRIO</option><option>EXPLOSION</option><option>DESCONOCIDO</option></select><select id="alert-district-filter"><option value="">Todos los distritos</option></select></div><div id="alert-list" class="alert-list"></div><div class="panel-foot"><span>Actualización automática</span><span class="pulse"></span></div></aside>
       </div>
     </section>
     <section id="view-dispositivos" class="view">
@@ -54,7 +54,7 @@
     </section>
     <section id="view-analisis" class="view">
       <div class="section-heading"><div><h1>Análisis de alertas</h1><p>Identifica patrones por zona, horario y tipo de evento.</p></div><button id="export-csv" class="secondary-btn">↓ Exportar CSV</button></div>
-      <div class="toolbar analysis-filters"><label>Desde <input type="date" id="date-from"></label><label>Hasta <input type="date" id="date-to"></label><select id="analysis-district"><option value="">Todos los distritos</option></select><select id="analysis-type"><option value="">Todos los tipos</option><option>GRITO</option><option>DISPARO</option><option>VIDRIO</option><option>EXPLOSION</option><option>PORTAZO</option><option>DESCONOCIDO</option></select><button id="apply-analysis" class="primary-btn">Aplicar filtros</button></div>
+      <div class="toolbar analysis-filters"><label>Desde <input type="date" id="date-from"></label><label>Hasta <input type="date" id="date-to"></label><select id="analysis-district"><option value="">Todos los distritos</option></select><select id="analysis-type"><option value="">Todos los tipos</option><option>GRITO</option><option>DISPARO</option><option>VIDRIO</option><option>EXPLOSION</option><option>DESCONOCIDO</option></select><button id="apply-analysis" class="primary-btn">Aplicar filtros</button></div>
       <div class="analysis-grid"><div class="chart-panel wide"><div class="chart-title"><h2>Alertas por distrito</h2><small>Comparación de volumen y alertas por dispositivo</small></div><div id="district-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Alertas por tipo</h2><small>Distribución de eventos</small></div><div id="type-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Evolución en el tiempo</h2><small>Alertas registradas por día</small></div><div id="trend-chart" class="chart-area"></div></div><div class="chart-panel wide"><div class="chart-title"><h2>Actividad por hora y día</h2><small>Mapa de calor · cantidad de alertas</small></div><div id="heatmap-chart" class="chart-area"></div></div></div>
     </section>
   </main>
@@ -73,6 +73,7 @@
    ========================================================== */
 const SB_URL = "https://zelgxkgqptcyzdobebkt.supabase.co";
 const SB_KEY = "sb_publishable_o-Fcw16ILyBgItgQcrIhwA_vMdupulf"; // sb_publishable_... (NUNCA la sb_secret_)
+const DISTRITOS=["Ancón","Ate","Barranco","Bellavista","Breña","Callao","Carabayllo","Carmen de la Legua Reynoso","Cercado de Lima","Chaclacayo","Chorrillos","Cieneguilla","Comas","El Agustino","Independencia","Jesús María","La Molina","La Perla","La Punta","La Victoria","Lince","Los Olivos","Lurigancho-Chosica","Lurín","Magdalena del Mar","Mi Perú","Miraflores","Pachacámac","Pucusana","Pueblo Libre","Puente Piedra","Punta Hermosa","Punta Negra","Rímac","San Bartolo","San Borja","San Isidro","San Juan de Lurigancho","San Juan de Miraflores","San Luis","San Martín de Porres","San Miguel","Santa Anita","Santa María del Mar","Santa Rosa","Santiago de Surco","Surquillo","Ventanilla","Villa El Salvador","Villa María del Triunfo"];
 
 /* ==========================================================
    2. SESIÓN (guardada en sessionStorage)
@@ -196,7 +197,6 @@ const colors = {
   EXPLOSION: "#e35c5c",
   GRITO: "#e6aa43",
   VIDRIO: "#58a6d5",
-  PORTAZO: "#87939d",
   DESCONOCIDO: "#87939d"
 };
 
@@ -205,7 +205,6 @@ const names = {
   DISPARO: "Disparo",
   VIDRIO: "Vidrio roto",
   EXPLOSION: "Explosión",
-  PORTAZO: "Portazo",
   DESCONOCIDO: "Desconocido"
 };
 
@@ -354,7 +353,8 @@ function renderMap() {
   alertLayer.clearLayers();
   deviceLayer.clearLayers();
 
-  const alerts = cargarAlertas();
+  const ft=$("#alert-type-filter").value,fd=$("#alert-district-filter").value;
+  const alerts=cargarAlertas().filter(a=>(!ft||a.tipo===ft)&&(!fd||alertDevice(a).distrito===fd));
 
   // Alertas de las últimas 48 h
   if (showAlerts) {
@@ -370,7 +370,7 @@ function renderMap() {
 
   // Dispositivos
   if (showDevices) {
-    cargarDispositivos().forEach(d => {
+    cargarDispositivos().filter(d=>!fd||d.distrito===fd).forEach(d=> {
       const online = isOnline(d);
       const m = L.marker([d.lat, d.lng], { icon: markerIcon("marker-device" + (online ? "" : " offline")) })
         .bindPopup(`<b>${d.nombre}</b><br>${d.id}<br>${online ? "Activo" : "Sin señal"}`);
@@ -419,13 +419,13 @@ function renderAlerts() {
     a.map(x => {
       const d = alertDevice(x);
       return `<div class="alert-item ${x.revision === "nueva" ? "new" : ""}" data-id="${x.id}"><i class="sev ${x.tipo}"></i><div class="alert-main"><b>${names[x.tipo]}</b><p>${d.nombre || x.dispositivo_id} · ${d.distrito || "Sin distrito"}</p><small>${x.id} · ${x.revision.replace("_", " ")}</small></div><span class="alert-time">${fmtTime(x.creado_en)}</span></div>`;
-    }).join("") || `<div class="empty-state">No hay alertas para estos filtros.</div>`;
+    }).join("") || `<div class="empty-state">${mensajeVacio()}</div>`;
 
   $$(".alert-item").forEach(el => el.onclick = () => abrirAlerta(el.dataset.id));
 }
 
 function populateDistricts() {
-  const ds = [...new Set(db.dispositivos.map(d => d.distrito))].sort();
+  let ds=[...new Set([...DISTRITOS,...db.dispositivos.map(d=>d.distrito)])].sort((a,b)=>a.localeCompare(b,"es"));
   ["alert-district-filter", "device-district", "analysis-district"].forEach(id => {
     const s = $("#" + id);
     const v = s.value;
@@ -583,7 +583,7 @@ function renderRegModal() {
   let body = "";
 
   if (reg.step === 1) {
-    body = `<h2>Registrar dispositivo</h2><p>Paso 1 de 4 · Identifica el equipo.</p><label>Nombre del dispositivo</label><input id="reg-name" placeholder="Ej. Cruce Av. Central" value="${reg.nombre}"><label>Distrito</label><select id="reg-district">${["Comas", "San Juan de Lurigancho", "La Victoria", "Miraflores", "Callao", "Villa El Salvador"].map(x => `<option ${reg.distrito === x ? "selected" : ""}>${x}</option>`).join("")}</select>`;
+    body = `<h2>Registrar dispositivo</h2><p>Paso 1 de 4 · Identifica el equipo.</p><label>Nombre del dispositivo</label><input id="reg-name" placeholder="Ej. Cruce Av. Central" value="${reg.nombre}"><label>Distrito</label><select id="reg-district"><option value="">Selecciona un distrito</option>${DISTRITOS.map(x => `<option ${reg.distrito === x ? "selected" : ""}>${x}</option>`).join("")}</select>`;
   }
 
   if (reg.step === 2) {
@@ -612,6 +612,7 @@ ${reg.secreto}</div><button class="secondary-btn" id="copy-code" style="width:10
       reg.nombre = $("#reg-name").value.trim();
       reg.distrito = $("#reg-district").value;
       if (!reg.nombre) { toast("Escribe un nombre para el dispositivo."); return; }
+      if (!reg.distrito) { toast("Elige un distrito."); return; }
     }
     if (reg.step === 2) {
       reg.direccion = $("#reg-address").value.trim();
@@ -648,7 +649,7 @@ ${reg.secreto}</div><button class="secondary-btn" id="copy-code" style="width:10
 }
 
 function formEditDevice(d) {
-  showModal(`<h2>Editar dispositivo</h2><p>Actualiza su nombre, distrito y dirección.</p><label>Nombre</label><input id="edit-name" value="${d.nombre}"><label>Distrito</label><input id="edit-district" value="${d.distrito}"><label>Dirección</label><input id="edit-address" value="${d.direccion}"><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancelar</button><button class="primary-btn" id="save-device">Guardar</button></div>`);
+  showModal(`<h2>Editar dispositivo</h2><p>Actualiza su nombre, distrito y dirección.</p><label>Nombre</label><input id="edit-name" value="${d.nombre}"><label>Distrito</label><select id="edit-district">${[...new Set([...DISTRITOS,d.distrito])].map(x=>`<option ${d.distrito===x?"selected":""}>${x}</option>`).join("")}</select><label>Dirección</label><input id="edit-address" value="${d.direccion}"><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancelar</button><button class="primary-btn" id="save-device">Guardar</button></div>`);
 
   $("#save-device").onclick = () => {
     actualizarDispositivo(d.id, {
@@ -799,7 +800,7 @@ function init() {
   $("#close-drawer").onclick = () => $("#detail-drawer").classList.remove("open");
   $("#modal-backdrop").onclick = e => { if (e.target.id === "modal-backdrop") closeModal(); };
 
-  ["alert-type-filter", "alert-district-filter"].forEach(id => $("#" + id).onchange = renderAlerts);
+  ["alert-type-filter","alert-district-filter"].forEach(id=>$("#"+id).onchange=()=>{renderAlerts();renderMap();ajustarMapa()});
   ["device-search", "device-district", "device-state"].forEach(id => $("#" + id).addEventListener("input", renderDevices));
 
   $("#show-alerts").onclick = () => {
@@ -846,7 +847,7 @@ async function sincronizar() {
   try {
     const [d, a, u] = await Promise.all([
       rest("GET", "dispositivos?select=id,nombre,distrito,direccion,lat,lng,estado,ultimo_latido,creado_en&order=creado_en.asc"),
-      rest("GET", "alertas?select=id,dispositivo_id,tipo,alarma,pico,dur,golpes,subida,energia,lat,lng,creado_en,revision,nota&order=creado_en.desc&limit=500"),
+      rest("GET", "alertas?select=id,dispositivo_id,tipo,alarma,pico,dur,golpes,subida,energia,lat,lng,creado_en,revision,nota&tipo=neq.PORTAZO&order=creado_en.desc&limit=500"),
       rest("GET", "sin_registrar?select=id,visto,lat,lng&ignorado=eq.false&order=visto.desc")
     ]);
 
@@ -914,6 +915,21 @@ function arrancar() {
   };
   if (ses) entrar().catch(() => saveSes(null));
 }
+
+function mensajeVacio(){
+  const dist=$("#alert-district-filter").value;
+  if(!dist)return "No hay alertas para estos filtros.";
+  const n=cargarDispositivos().filter(d=>d.distrito===dist).length;
+  if(!n)return `No hay ningún dispositivo en ${dist}, por eso no se pueden detectar alertas allí.`;
+  const hay=cargarAlertas().some(a=>alertDevice(a).distrito===dist);
+  return hay?"No hay alertas para estos filtros.":`Hay ${n} dispositivo${n>1?"s":""} en ${dist}, pero todavía no se han detectado alertas.`}
+function ajustarMapa(){
+  const fd=$("#alert-district-filter").value;
+  if(!fd||!map)return;
+  const pts=cargarDispositivos().filter(d=>d.distrito===fd).map(d=>[d.lat,d.lng]);
+  if(pts.length)map.fitBounds(pts,{maxZoom:15,padding:[40,40]});
+  if(!pts.length)toast(`No hay ningún dispositivo en ${fd}.`);
+  else if(!cargarAlertas().some(a=>alertDevice(a).distrito===fd))toast(`No hay alertas en ${fd}.`)}
 
 document.addEventListener("DOMContentLoaded", arrancar);
 </script>
