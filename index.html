@@ -317,6 +317,19 @@ function actualizarDispositivo(id, patch) {
   return d;
 }
 
+async function borrarDispositivo(id) {
+  try {
+    await rest("DELETE", "dispositivos?id=eq." + encodeURIComponent(id));
+    db.dispositivos = db.dispositivos.filter(x => x.id !== id);
+    return true;
+  } catch (e) {
+    toast(String(e.message).startsWith("409")
+      ? "No se puede eliminar: tiene alertas guardadas. Puedes bloquearlo en su lugar."
+      : "No se pudo eliminar: " + e.message);
+    return false;
+  }
+}
+
 function alertDevice(a) {
   return db.dispositivos.find(d => d.id === a.dispositivo_id) || {};
 }
@@ -528,7 +541,7 @@ function abrirDispositivo(id) {
   const a = cargarAlertas().filter(x => x.dispositivo_id === id);
 
   $("#detail-title").textContent = d.nombre;
-  $("#detail-content").innerHTML = `<div class="detail-block"><div class="detail-grid"><div><small>ID</small><b class="mono">${d.id}</b></div><div><small>Estado</small><b>${isOnline(d) ? "Activo" : d.estado === "bloqueado" ? "Bloqueado" : "Sin señal"}</b></div><div><small>Distrito</small><b>${d.distrito}</b></div><div><small>Última señal</small><b>${d.ultimo_latido ? fmtDate(d.ultimo_latido) : "Sin señal"}</b></div><div style="grid-column:span 2"><small>Dirección</small><b>${d.direccion}</b></div></div></div><div class="detail-block"><h3>Acciones</h3><div class="detail-actions"><button id="edit-device">Editar datos</button><button id="block-device">${d.estado === "bloqueado" ? "Desbloquear" : "Bloquear"}</button><button id="regen-code">Regenerar código</button></div></div><div class="detail-block"><h3>Historial de alertas (${a.length})</h3>${a.map(x => `<div class="alert-item" data-history="${x.id}"><i class="sev ${x.tipo}"></i><div class="alert-main"><b>${names[x.tipo]}</b><p>${fmtDate(x.creado_en)}</p><small>${x.revision}</small></div></div>`).join("") || '<p class="muted">Este dispositivo aún no tiene alertas.</p>'}</div>`;
+  $("#detail-content").innerHTML = `<div class="detail-block"><div class="detail-grid"><div><small>ID</small><b class="mono">${d.id}</b></div><div><small>Estado</small><b>${isOnline(d) ? "Activo" : d.estado === "bloqueado" ? "Bloqueado" : "Sin señal"}</b></div><div><small>Distrito</small><b>${d.distrito}</b></div><div><small>Última señal</small><b>${d.ultimo_latido ? fmtDate(d.ultimo_latido) : "Sin señal"}</b></div><div style="grid-column:span 2"><small>Dirección</small><b>${d.direccion}</b></div></div></div><div class="detail-block"><h3>Acciones</h3><div class="detail-actions"><button id="edit-device">Editar datos</button><button id="block-device">${d.estado === "bloqueado" ? "Desbloquear" : "Bloquear"}</button><button id="regen-code">Regenerar código</button><button id="delete-device">Eliminar</button></div></div><div class="detail-block"><h3>Historial de alertas (${a.length})</h3>${a.map(x => `<div class="alert-item" data-history="${x.id}"><i class="sev ${x.tipo}"></i><div class="alert-main"><b>${names[x.tipo]}</b><p>${fmtDate(x.creado_en)}</p><small>${x.revision}</small></div></div>`).join("") || '<p class="muted">Este dispositivo aún no tiene alertas.</p>'}</div>`;
 
   $("#detail-drawer").classList.add("open");
 
@@ -542,6 +555,14 @@ function abrirDispositivo(id) {
   $("#regen-code").onclick = () => showModal(`<h2>Nuevo código de un solo uso</h2><p>El código anterior dejará de funcionar. Se mostrará una sola vez.</p><div class="secret">SL-${Math.random().toString(36).slice(2, 8).toUpperCase()}</div><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cerrar</button></div>`);
 
   $("#edit-device").onclick = () => formEditDevice(d);
+    $("#delete-device").onclick = () => {
+    showModal(`<h2>Eliminar dispositivo</h2><p>Se eliminará "${d.nombre}" (${d.id}). Esta acción no se puede deshacer. Solo se puede borrar si no tiene alertas guardadas; si las tiene, es mejor bloquearlo.</p><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancelar</button><button class="primary-btn" id="confirm-delete">Sí, eliminar</button></div>`);
+    $("#confirm-delete").onclick = async () => {
+      const ok = await borrarDispositivo(id);
+      closeModal();
+      if (ok) { $("#detail-drawer").classList.remove("open"); refresh(); toast("Dispositivo eliminado."); }
+    };
+  };
   $$("[data-history]").forEach(b => b.onclick = () => abrirAlerta(b.dataset.history));
 }
 
