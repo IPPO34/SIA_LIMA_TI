@@ -414,7 +414,8 @@ function renderAlerts() {
     (!type || x.tipo === type) && (!dist || alertDevice(x).distrito === dist)
   );
 
-  $("#alert-total").textContent = `${a.length} eventos`;
+  const nDisp = dist ? cargarDispositivos().filter(d => d.distrito === dist).length : 0;
+  $("#alert-total").textContent = `${a.length} eventos` + (dist ? ` · ${nDisp} dispositivo${nDisp === 1 ? "" : "s"} en ${dist}` : "");
   $("#alert-list").innerHTML =
     a.map(x => {
       const d = alertDevice(x);
@@ -898,8 +899,11 @@ async function sincronizar() {
     });
 
     db.sin_registrar = u;
+    const nuevas = alertasVistas ? db.alertas.filter(x => !alertasVistas.has(x.id)) : [];
+    alertasVistas = new Set(db.alertas.map(x => x.id));
     populateDistricts();
     refresh();
+    if (nuevas.length) avisarNuevas(nuevas);
   } catch (e) {
     if (String(e.message).startsWith("401")) salir();
     else console.error(e);
@@ -942,13 +946,58 @@ function mensajeVacio(){
   if(!n)return `No hay ningún dispositivo en ${dist}, por eso no se pueden detectar alertas allí.`;
   const hay=cargarAlertas().some(a=>alertDevice(a).distrito===dist);
   return hay?"No hay alertas para estos filtros.":`Hay ${n} dispositivo${n>1?"s":""} en ${dist}, pero todavía no se han detectado alertas.`}
-function ajustarMapa(){
-  const fd=$("#alert-district-filter").value;
-  if(!fd||!map)return;
-  const pts=cargarDispositivos().filter(d=>d.distrito===fd).map(d=>[d.lat,d.lng]);
-  if(pts.length)map.fitBounds(pts,{maxZoom:15,padding:[40,40]});
-  if(!pts.length)toast(`No hay ningún dispositivo en ${fd}.`);
-  else if(!cargarAlertas().some(a=>alertDevice(a).distrito===fd))toast(`No hay alertas en ${fd}.`)}
+
+let alertasVistas = null;      // ids de alertas ya vistas (null = aún no se hizo la primera carga)
+let distritoAnterior = "";
+
+function ajustarMapa() {
+  if (!map) return;
+  const fd = $("#alert-district-filter").value;
+  if (!fd) {                                   // volvió a "Todos los distritos"
+    if (distritoAnterior) map.setView([-12.055, -77.055], 11);
+    distritoAnterior = "";
+    return;
+  }
+  distritoAnterior = fd;
+  const pts = cargarDispositivos()
+    .filter(d => d.distrito === fd && d.lat != null && d.lng != null)
+    .map(d => [d.lat, d.lng]);
+  if (pts.length) map.fitBounds(pts, { maxZoom: 15, padding: [40, 40] });
+  if (!pts.length) toast(`No hay ningún dispositivo en ${fd}.`);
+  else if (!cargarAlertas().some(a => alertDevice(a).distrito === fd)) toast(`No hay alertas en ${fd}.`);
+}
+
+function pitido() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine"; o.frequency.value = 880; g.gain.value = .15;
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + .35);
+    o.onended = () => ctx.close();
+  } catch { }
+}
+
+// Cuando llega una alerta nueva: aviso, sonido (si está activado) y el mapa vuela hasta el lugar
+function avisarNuevas(nuevas) {
+  const a = [...nuevas].sort((x, y) => new Date(y.creado_en) - new Date(x.creado_en))[0];
+  const d = alertDevice(a);
+  const nombre = names[a.tipo] || a.tipo;
+  const ft = $("#alert-type-filter").value, fd = $("#alert-district-filter").value;
+  const visible = (!ft || a.tipo === ft) && (!fd || d.distrito === fd);
+
+  toast(`Nueva alerta: ${nombre} en ${d.distrito || "ubicación sin distrito"}` + (nuevas.length > 1 ? ` (+${nuevas.length - 1} más)` : ""));
+  if (soundOn) pitido();
+
+  // Solo mueve el mapa si estás en el Centro de mando y la alerta cumple los filtros activos
+  if (!visible || !map || !$("#view-mando").classList.contains("active")) return;
+  map.flyTo([a.lat, a.lng], 17, { duration: 1.4 });
+  const color = colors[a.tipo] || "#87939d";
+  const aro = L.circle([a.lat, a.lng], { radius: 60, color, weight: 2, fillColor: color, fillOpacity: .15 }).addTo(map);
+  setTimeout(() => map.removeLayer(aro), 8000);
+  setTimeout(() => L.popup().setLatLng([a.lat, a.lng])
+    .setContent(`<b>${nombre}</b><br>${d.nombre || a.dispositivo_id}<br>${fmtDate(a.creado_en)}`).openOn(map), 1500);
+}
 
 document.addEventListener("DOMContentLoaded", arrancar);
 </script>
