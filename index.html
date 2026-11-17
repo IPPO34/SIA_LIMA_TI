@@ -317,6 +317,21 @@ function actualizarDispositivo(id, patch) {
   return d;
 }
 
+/* ==========================================================
+   PARTE A · Pega esta función justo antes de  async function borrarDispositivo(id) {
+   (si aún no agregaste el botón Eliminar, pégala antes de  function alertDevice(a) {  )
+   ========================================================== */
+async function regenerarCodigo(id) {
+  const secreto = hex(16);                       // 32 caracteres hexadecimales al azar
+  try {
+    await rest("PATCH", "dispositivos?id=eq." + encodeURIComponent(id), { secreto });
+    return secreto;
+  } catch (e) {
+    toast("No se pudo regenerar el código: " + e.message);
+    return null;
+  }
+}
+
 async function borrarDispositivo(id) {
   try {
     await rest("DELETE", "dispositivos?id=eq." + encodeURIComponent(id));
@@ -552,9 +567,22 @@ function abrirDispositivo(id) {
     toast("Estado del dispositivo actualizado.");
   };
 
-  $("#regen-code").onclick = () => showModal(`<h2>Nuevo código de un solo uso</h2><p>El código anterior dejará de funcionar. Se mostrará una sola vez.</p><div class="secret">SL-${Math.random().toString(36).slice(2, 8).toUpperCase()}</div><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cerrar</button></div>`);
+  /* ==========================================================
+   PARTE B · En abrirDispositivo(), BORRA la línea que empieza con
+     $("#regen-code").onclick = () => showModal(`<h2>Nuevo código de un solo uso</h2>...
+   y pega esto en su lugar
+   ========================================================== */
+  $("#regen-code").onclick = () => {
+    showModal(`<h2>Regenerar código</h2><p>El código actual de "${d.nombre}" dejará de funcionar y tendrás que grabar el nuevo en el dispositivo. Hasta entonces, sus alertas serán rechazadas.</p><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancelar</button><button class="primary-btn" id="confirm-regen">Sí, regenerar</button></div>`);
+    $("#confirm-regen").onclick = async () => {
+      const secreto = await regenerarCodigo(id);
+      if (!secreto) { closeModal(); return; }
+      showModal(`<h2>Nuevo código</h2><p>Se mostrará una sola vez. Copia el ID y el código y grábalos en el dispositivo.</p><div class="secret" id="new-code" style="font-size:14px;white-space:pre-line">${d.id}\n${secreto}</div><div class="modal-actions"><button class="secondary-btn" id="copy-new-code">Copiar</button><button class="primary-btn" onclick="closeModal()">Listo</button></div>`);
+      $("#copy-new-code").onclick = () => { navigator.clipboard?.writeText($("#new-code").textContent); toast("Código copiado."); };
+    };
+  };
 
-  $("#edit-device").onclick = () => formEditDevice(d);
+  
     $("#delete-device").onclick = () => {
     showModal(`<h2>Eliminar dispositivo</h2><p>Se eliminará "${d.nombre}" (${d.id}). Esta acción no se puede deshacer. Solo se puede borrar si no tiene alertas guardadas; si las tiene, es mejor bloquearlo.</p><div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancelar</button><button class="primary-btn" id="confirm-delete">Sí, eliminar</button></div>`);
     $("#confirm-delete").onclick = async () => {
