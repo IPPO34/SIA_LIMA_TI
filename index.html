@@ -55,7 +55,7 @@
     <section id="view-analisis" class="view">
       <div class="section-heading"><div><h1>Análisis de alertas</h1><p>Identifica patrones por zona, horario y tipo de evento.</p></div><button id="export-csv" class="secondary-btn">↓ Exportar CSV</button></div>
       <div class="toolbar analysis-filters"><label>Desde <input type="date" id="date-from"></label><label>Hasta <input type="date" id="date-to"></label><select id="analysis-district"><option value="">Todos los distritos</option></select><select id="analysis-type"><option value="">Todos los tipos</option><option>GRITO</option><option>DISPARO</option><option>VIDRIO</option><option>EXPLOSION</option><option>DESCONOCIDO</option></select><button id="apply-analysis" class="primary-btn">Aplicar filtros</button></div>
-      <div class="analysis-grid"><div class="chart-panel wide"><div class="chart-title"><h2>Alertas por distrito</h2><small>Comparación de volumen y alertas por dispositivo</small></div><div id="district-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Alertas por tipo</h2><small>Distribución de eventos</small></div><div id="type-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Evolución en el tiempo</h2><small>Alertas registradas por día</small></div><div id="trend-chart" class="chart-area"></div></div><div class="chart-panel wide"><div class="chart-title"><h2>Actividad por hora y día</h2><small>Mapa de calor · cantidad de alertas</small></div><div id="heatmap-chart" class="chart-area"></div></div></div>
+      <div class="analysis-grid"><div class="chart-panel wide"><div class="chart-title"><h2>Alertas por distrito</h2><small>Comparación de volumen y alertas por dispositivo</small></div><div id="district-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Alertas por tipo</h2><small>Distribución de eventos</small></div><div id="type-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Evolución en el tiempo</h2><small>Alertas registradas por día</small></div><div id="trend-chart" class="chart-area"></div></div><div class="chart-panel wide"><div class="chart-title"><h2>Actividad por hora y día</h2><small>Mapa de calor · cantidad de alertas</small></div><div id="heatmap-chart" class="chart-area"></div></div><div class="chart-panel"><div class="chart-title"><h2>Ranking de dispositivos</h2><small>Dónde se concentran más alertas · rojo = zonas de mayor prioridad</small></div><div id="device-rank-chart" class="chart-area" style="height:auto;max-height:240px;overflow:auto"></div></div></div>                
     </section>
   </main>
 </div>
@@ -848,6 +848,18 @@ function renderAnalysis() {
     });
   }
   svgBars($("#trend-chart"), days);
+
+   
+  // --- Ranking por dispositivo (de más a menos alertas) ---
+  const porDisp = db.dispositivos
+    .map(d => ({ d, n: a.filter(x => x.dispositivo_id === d.id).length }))
+    .sort((x, y) => y.n - x.n);
+  const maxN = Math.max(1, ...porDisp.map(x => x.n));
+  $("#device-rank-chart").innerHTML = porDisp.map(x => {
+    const pct = x.n / maxN * 100;
+    const color = x.n === 0 ? "var(--line)" : pct >= 66 ? "var(--red)" : pct >= 33 ? "var(--amber)" : "var(--accent)";
+    return `<div style="display:grid;grid-template-columns:150px 1fr 34px;gap:8px;align-items:center;margin:6px 0;font-size:11px"><span title="${x.d.nombre}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="color:var(--text)">${x.d.id}</b><br><small style="color:var(--muted)">${x.d.distrito}</small></span><div style="background:var(--panel2);height:10px"><div style="width:${pct}%;height:100%;background:${color}"></div></div><span class="mono" style="text-align:right">${x.n}</span></div>`;
+  }).join("") || '<div class="empty-state">No hay dispositivos.</div>';
 
   // --- Mapa de calor día/hora ---
   const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
