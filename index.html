@@ -671,7 +671,7 @@ function renderRegModal() {
   }
 
   if (reg.step === 2) {
-    body = `<h2>Ubicación del dispositivo</h2><p>Paso 2 de 4 · Coloca el punto en el mapa y completa la dirección.</p><div id="register-map" style="height:230px;background:var(--bg)"></div><label>Dirección o referencia</label><input id="reg-address" placeholder="Av. / calle, número o referencia" value="${reg.direccion}"><small>Coordenadas: ${reg.lat.toFixed(5)}, ${reg.lng.toFixed(5)}</small>`;
+    body = `<h2>Ubicación del dispositivo</h2><p>Paso 2 de 4 · Haz clic en el mapa para marcar la ubicación exacta (o arrastra el punto) y completa la dirección.</p><div id="register-map" style="height:230px;background:var(--bg)"></div><label>Dirección o referencia</label><input id="reg-address" placeholder="Av. / calle, número o referencia" value="${reg.direccion}"><small id="reg-coords">Coordenadas: ${reg.lat.toFixed(5)}, ${reg.lng.toFixed(5)}</small>`;
   }
 
   if (reg.step === 3) {
@@ -731,11 +731,10 @@ ${reg.secreto}</div><button class="secondary-btn" id="copy-code" style="width:10
     const m = L.map("register-map").setView([reg.lat, reg.lng], 13);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(m);
     const marker = L.marker([reg.lat, reg.lng], { draggable: true }).addTo(m);
-    marker.on("dragend", () => {
-      const p = marker.getLatLng();
-      reg.lat = p.lat;
-      reg.lng = p.lng;
-    });
+    const poner = p => { reg.lat = p.lat; reg.lng = p.lng; $("#reg-coords").textContent = `Coordenadas: ${reg.lat.toFixed(5)}, ${reg.lng.toFixed(5)}`; };
+    marker.on("dragend", () => poner(marker.getLatLng()));
+    m.on("click", e => { marker.setLatLng(e.latlng); poner(e.latlng); });
+    setTimeout(() => m.invalidateSize(), 150);
   }
 
   if (reg.step === 3) {
